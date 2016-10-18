@@ -27,7 +27,13 @@ Steps:
 Note: use gpstate to ensure you don't have any segments that are down.  If you have any segments 
 down and you remove mirroring, the database will not work.
 
+Example:
+./remove_mirroring.sh
+
 2.  Run a gpcrondump backup of the entire database.  This must be done AFTER step 1.
+
+Example (where gpadmin is the name of the database):
+gpcrondump -x gpadmin -a -c -g -G -C
 
 3.  Run expand.sh and pass the number of parallel processes you want to use.
     - Pick a new System Expansion.
@@ -37,6 +43,9 @@ down and you remove mirroring, the database will not work.
     - Review the expand file and continue.
     - Expansion will execute and so will an analyze.
 
+Example:
+./expand.sh 8
+
 4.  Test with the increased number of segments per host.  WARNING: If you decide to revert to the 
 former configuration, any changes you make in this database will be lost!!
 
@@ -44,11 +53,16 @@ former configuration, any changes you make in this database will be lost!!
 original database intialization file, and the number of parallel processes you want to use.  You 
 only need to run this if you decide to revert to the former configuration.  
 
-Note: Be sure to have the DATABASE_NAME entry in your gp_init_config file!
+Note: You will need to update the gp_init_config file to remove the mirroring information.  
+Mirroring will be added back in a later step.
 
 Example:
 ./shrink.sh gpexpand_inputfile_20161012_174056 gp_init_config 8
 
 6.  Add mirrors back to the configuration ONLY after you have decided to stay with the current 
 number of segments per host or you have successfully executed shrink.sh to revert to the former 
-configuration.  Run add_mirrors.sh to add mirrors back to the database.
+configuration.  Run add_mirrors.sh to add mirrors back to the database.  Pass in the name the
+standby master if you have one configured.  
+
+Example:
+./add_mirrors.sh smdw
