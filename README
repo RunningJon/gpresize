@@ -1,10 +1,54 @@
 readme for gpresize
 
-***********************************************************************************************************************************************
+***************************************************************************************************
+** gpresize
+***************************************************************************************************
+WARNING!  
+These scripts can be destructive and are intended for evaluation purposes only!  Some commands 
+used by these scripts are not supported by Pivotal.  These steps are intended to evaluate a cluster
+with more segments per host than was originally configured.  The scripts also allow you to restore 
+the cluster to the original size.
+
+Please do not use these scripts on a Production cluster.  Use only for Proof of Concept work and
+data that is easily restored from an external backup.
+
+These scripts also only work for a single database cluster.
+
+***************************************************************************************************
 ** Install 
-***********************************************************************************************************************************************
+***************************************************************************************************
 Download update_repo.sh from github.
 curl "https://raw.githubusercontent.com/pivotalguru/gpresize/master/update_repo.sh " > update_repo.sh
 chmod 755 update_repo.sh
 ./update_repo.sh
 
+Steps:
+1.  Removing database mirroring if enabled with remove_mirroring.sh
+Note: use gpstate to ensure you don't have any segments that are down.  If you have any segments 
+down and you remove mirroring, the database will not work.
+
+2.  Run a gpcrondump backup of the entire database.  This must be done AFTER step 1.
+
+3.  Run expand.sh and pass the number of parallel processes you want to use.
+    - Pick a new System Expansion.
+    - Enter a blank line for the new hosts you want to add.
+    - Enter number of new segments PER HOST you want to add.  
+    - Provide directory names such as "/data1/primary" and "/data2/primary".
+    - Review the expand file and continue.
+    - Expansion will execute and so will an analyze.
+
+4.  Test with the increased number of segments per host.  WARNING: If you decide to revert to the 
+former configuration, any changes you make in this database will be lost!!
+
+5.  (Optional) Run shrink.sh and pass the expansion file created during the expand process, the 
+original database intialization file, and the number of parallel processes you want to use.  You 
+only need to run this if you decide to revert to the former configuration.  
+
+Note: Be sure to have the DATABASE_NAME entry in your gp_init_config file!
+
+Example:
+./shrink.sh gpexpand_inputfile_20161012_174056 gp_init_config 8
+
+6.  Add mirrors back to the configuration ONLY after you have decided to stay with the current 
+number of segments per host or you have successfully executed shrink.sh to revert to the former 
+configuration.  Run add_mirrors.sh to add mirrors back to the database.

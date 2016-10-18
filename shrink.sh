@@ -42,6 +42,29 @@ case $response in
 		echo "Continue..."
 	;;
 esac
+checkgpinitconfig()
+{
+
+	echo "Checking $gpinitconfig"
+	count=$(grep "#DATABASE_NAME" $gpinitconfig | wc -l)
+	if [ "$count" -gt 0 ]; then
+		echo "DATABASE_NAME must be set in your initialization file!"
+		exit 1
+	fi
+
+	count=$(grep "^MIRROR*" $gpinitconfig | wc -l)
+	if [ "$count" -gt 0 ]; then
+		echo "MIRROR* needs to be removed or commented out from your initialization file!"
+		exit 1
+	fi
+
+	count=$(grep "^declare -a MIRROR_DATA_DIRECTORY*" $gpinitconfig | wc -l)
+	if [ "$count" -gt 0 ]; then
+		echo "MIRROR_DATA_DIRECTORY needs to be removed or commented out from your initialization file!"
+		exit 1
+	fi
+	echo "Config OK $gpinitconfig"
+}
 
 checkbackup()
 {
@@ -93,7 +116,6 @@ init_db()
 		echo "host all all 0.0.0.0/0 md5" >> $MASTER_DATA_DIRECTORY/pg_hba.conf
 		gpstop -u
 		psql template1 -c "alter user gpadmin password 'changeme'"
-		psql template1 -c "create database $PGDATABASE"
 		touch "$end"
 	else
 		echo "database already initialized"
@@ -122,7 +144,7 @@ restore_db()
 {
 	end="$PWD""/log/end_shrink_restore.log"
 	if [ ! -f "$end" ]; then
-		echo "gpdbrestore -a -e -s $PGDATABASE --noanalyze"
+		echo "gpdbrestore -a -G include -e -s $PGDATABASE --noanalyze"
 		gpdbrestore -a -e -s $PGDATABASE --noanalyze || true
 		touch "$end"
 	fi
@@ -163,7 +185,7 @@ cleanup()
 
 }
 
-
+checkgpinitconfig
 rename_expanded_dir
 init_db
 move_backup
