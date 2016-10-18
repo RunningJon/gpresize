@@ -1,18 +1,18 @@
 readme for gpresize
 
-***************************************************************************************************
+**************************************************************************************************
 ** gpresize
-***************************************************************************************************
+**************************************************************************************************
 WARNING!  
 These scripts can be destructive and are intended for evaluation purposes only!  Some commands 
-used by these scripts are not supported by Pivotal.  These steps are intended to evaluate a cluster
-with more segments per host than was originally configured.  The scripts also allow you to restore 
-the cluster to the original size.
+used by these scripts are not supported by Pivotal.  These steps are intended to evaluate a 
+cluster with more segments per host than was originally configured.  The scripts also allow you 
+to restore the cluster to the original size.
 
 Please do not use these scripts on a Production cluster.  Use only for Proof of Concept work and
 data that is easily restored from an external backup.
 
-These scripts also only work for a single database cluster.
+These scripts also only work for a single database in a Greenplum cluster.
 
 ***************************************************************************************************
 ** Install 

@@ -35,6 +35,17 @@ case $response in
 	;;
 esac
 
+check_faultstrategy()
+{
+	gp_fault_strategy=$(psql -t -A -c "select fault_strategy from gp_fault_strategy")
+	if [ "$gp_fault_strategy" == "n" ]; then
+		echo "Mirroring disabled."
+		echo "Continue..."
+	else
+		echo "Mirroring enabled!  Please run remove_mirroring.sh and then a full backup before expanding!"
+		exit 1
+	fi
+}
 backupdb()
 {
 	end="$PWD""/log/end_expand_backup.log"
@@ -150,6 +161,7 @@ analyze()
 }
 
 startdb
+check_faultstrategy
 checkbackup
 getifilename
 if [ "$ifile" == "" ]; then

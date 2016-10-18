@@ -42,6 +42,7 @@ case $response in
 		echo "Continue..."
 	;;
 esac
+
 checkgpinitconfig()
 {
 
@@ -65,7 +66,6 @@ checkgpinitconfig()
 	fi
 	echo "Config OK $gpinitconfig"
 }
-
 checkbackup()
 {
 	if [ -d $MASTER_DATA_DIRECTORY/db_dumps/ ]; then
@@ -115,7 +115,7 @@ init_db()
 		gpinitsystem -c $gpinitconfig -a || true
 		echo "host all all 0.0.0.0/0 md5" >> $MASTER_DATA_DIRECTORY/pg_hba.conf
 		gpstop -u
-		psql template1 -c "alter user gpadmin password 'changeme'"
+		psql -c "alter user gpadmin password 'changeme'"
 		touch "$end"
 	else
 		echo "database already initialized"
@@ -145,7 +145,7 @@ restore_db()
 	end="$PWD""/log/end_shrink_restore.log"
 	if [ ! -f "$end" ]; then
 		echo "gpdbrestore -a -G include -e -s $PGDATABASE --noanalyze"
-		gpdbrestore -a -e -s $PGDATABASE --noanalyze || true
+		gpdbrestore -a -G include -e -s $PGDATABASE --noanalyze || true
 		touch "$end"
 	fi
 }

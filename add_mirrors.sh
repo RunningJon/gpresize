@@ -3,6 +3,11 @@ set -e
 
 PWD=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
+standby_master="$1"
+
+echo "Standby Master: $standby_master"
+read -p "Hit enter to continue or control+c to exit..."
+
 mirrors_init_config="$PWD""/mirrors_init_config"
 
 check_for_mirrors()
@@ -11,11 +16,7 @@ check_for_mirrors()
 }
 create_mirrors_init_config()
 {
-	if [ ! -f "$mirrors_init_config" ]; then
-		gpaddmirrors -o mirrors_init_config
-	else
-		echo "mirrors_init_config already created."
-	fi
+	gpaddmirrors -o mirrors_init_config
 }
 check_mirrors_init_config()
 {
@@ -41,6 +42,19 @@ check_status()
 {
 	mirror_status=$(psql -t -A -c "select count(*) from gp_segment_configuration where mode = 'r'")
 }
+add_standby()
+{
+	if [ "$standby_master" != "" ]; then
+		masters_count=$(psql -t -A -c "select count(*) from gp_segment_configuration where content = -1;")
+		if [ "$masters_count" -eq "1" ]; then
+			echo "ssh $standby_master \"bash -c 'rm -rf $MASTER_DATA_DIRECTORY'\""
+			ssh $standby_master "bash -c 'rm -rf $MASTER_DATA_DIRECTORY'"
+			echo "gpinitstandby -s $standby_master"
+			gpinitstandby -s $standby_master
+		fi
+	fi
+}
+
 check_for_mirrors
 
 if [ "$mirrors_count" -eq "0" ]; then
@@ -53,9 +67,10 @@ fi
 check_status
 echo -ne "Adding mirrors."
 while [ "$mirror_status" -gt "0" ]; do
-	echo "."
+	echo -ne "."
 	sleep 10
 	check_status
 done
-
+echo ""
+add_standby
 echo "Done!"
