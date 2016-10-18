@@ -1,1 +1,10 @@
 readme for gpresize
+
+***********************************************************************************************************************************************
+** Install 
+***********************************************************************************************************************************************
+Download update_repo.sh from github.
+curl "https://raw.githubusercontent.com/pivotalguru/gpresize/master/update_repo.sh " > update_repo.sh
+chmod 755 update_repo.sh
+./update_repo.sh
+
