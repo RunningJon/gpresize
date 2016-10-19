@@ -23,19 +23,22 @@ chmod 755 update_repo.sh
 ./update_repo.sh
 
 Steps:
-1.  Removing database mirroring if enabled with remove_mirroring.sh
+1.  Use gpstate to make sure the database is up and healthy.  Do NOT proceed if you have any 
+segments that are down!
+
+2.  Removing database mirroring if enabled with remove_mirroring.sh
 Note: use gpstate to ensure you don't have any segments that are down.  If you have any segments 
 down and you remove mirroring, the database will not work.
 
 Example:
 ./remove_mirroring.sh
 
-2.  Run a gpcrondump backup of the entire database.  This must be done AFTER step 1.
+3.  Run a gpcrondump backup of the entire database.  This must be done AFTER step 1.
 
 Example (where gpadmin is the name of the database):
 gpcrondump -x gpadmin -a -c -g -G -C
 
-3.  Run expand.sh and pass the number of parallel processes you want to use.
+4.  Run expand.sh and pass the number of parallel processes you want to use.
     - Pick a new System Expansion.
     - Enter a blank line for the new hosts you want to add.
     - Enter number of new segments PER HOST you want to add.  
@@ -46,10 +49,10 @@ gpcrondump -x gpadmin -a -c -g -G -C
 Example:
 ./expand.sh 8
 
-4.  Test with the increased number of segments per host.  WARNING: If you decide to revert to the 
+5.  Test with the increased number of segments per host.  WARNING: If you decide to revert to the 
 former configuration, any changes you make in this database will be lost!!
 
-5.  (Optional) Run shrink.sh and pass the expansion file created during the expand process, the 
+6.  (Optional) Run shrink.sh and pass the expansion file created during the expand process, the 
 original database intialization file, and the number of parallel processes you want to use.  You 
 only need to run this if you decide to revert to the former configuration.  
 
@@ -59,7 +62,7 @@ Mirroring will be added back in a later step.
 Example:
 ./shrink.sh gpexpand_inputfile_20161012_174056 gp_init_config 8
 
-6.  Add mirrors back to the configuration ONLY after you have decided to stay with the current 
+7.  Add mirrors back to the configuration ONLY after you have decided to stay with the current 
 number of segments per host or you have successfully executed shrink.sh to revert to the former 
 configuration.  Run add_mirrors.sh to add mirrors back to the database.  Pass in the name the
 standby master if you have one configured.  
