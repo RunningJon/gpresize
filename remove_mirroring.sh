@@ -3,7 +3,7 @@ set -e
 
 check_health()
 {
-	count=$(psql -t -A -c "select count(*) from gp_segment_configuration where preferred_role <> role and role = 'p';")
+	count=$(psql -t -A -c "select count(*) from gp_segment_configuration where preferred_role <> role and role = 'p' and status = 'u';")
 	if [ "$count" -eq "0" ]; then
 		echo "Database healthy.  Continuing..."
 	else
