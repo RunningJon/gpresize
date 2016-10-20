@@ -126,7 +126,7 @@ move_backup()
 	end="$PWD""/log/end_shrink_move.log"
 	if [ ! -f "$end" ]; then
 		# move the backup directories back for the restore
-		for i in $(psql -t -A -c "SELECT address, fselocation || '/', fselocation || '_backup/db_dumps/' FROM gp_segment_configuration JOIN pg_filespace_entry ON (dbid = fsedbid) JOIN pg_filespace fs ON (fs.oid = fsefsoid) WHERE fsname = 'pg_system' and content >= 0;"); do 
+		for i in $(psql -t -A -c "SELECT hostname, fselocation || '/', fselocation || '_backup/db_dumps/' FROM gp_segment_configuration JOIN pg_filespace_entry ON (dbid = fsedbid) JOIN pg_filespace fs ON (fs.oid = fsefsoid) WHERE fsname = 'pg_system' and content >= 0;"); do 
 			exthost=$(echo $i | awk -F '|' '{print $1}')
 			extpath=$(echo $i | awk -F '|' '{print $2}')
 			backuppath=$(echo $i | awk -F '|' '{print $3}')
@@ -174,7 +174,7 @@ cleanup()
 		echo "rm -rf $masterdirbackup"
 		rm -rf $masterdirbackup
 
-		for i in $(psql -t -A -c "SELECT distinct address, array_to_string(((string_to_array(fselocation, '/'))[1:(array_upper(string_to_array(fselocation, '/'), 1)-1)]), '/') || '/*_backup' FROM gp_segment_configuration JOIN pg_filespace_entry ON (dbid = fsedbid) JOIN pg_filespace fs ON (fs.oid = fsefsoid) WHERE fsname = 'pg_system' and content >= 0;"); do
+		for i in $(psql -t -A -c "SELECT distinct hostname, array_to_string(((string_to_array(fselocation, '/'))[1:(array_upper(string_to_array(fselocation, '/'), 1)-1)]), '/') || '/*_backup' FROM gp_segment_configuration JOIN pg_filespace_entry ON (dbid = fsedbid) JOIN pg_filespace fs ON (fs.oid = fsefsoid) WHERE fsname = 'pg_system' and content >= 0;"); do
 			exthost=$(echo $i | awk -F '|' '{print $1}')
 			extpath=$(echo $i | awk -F '|' '{print $2}')
 			echo "ssh $exthost \"bash -c 'rm -rf $extpath'\""
